@@ -1,4 +1,5 @@
 import SimpleSteps from '@/components/SimpleSteps';
+import WhitelistInfo from '@/components/WhitelistInfo';
 
 export default function Home() {
   return (
@@ -11,15 +12,19 @@ export default function Home() {
       </div>
 
       <div className="max-w-lg sm:max-w-2xl mx-auto px-3 sm:px-4 relative z-10">
-        {/* Simple Header */}
+        {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-2">
-            Crypto Stack
+            Whitelist Registration
           </h1>
+          <p className="text-slate-600 text-sm sm:text-base max-w-md mx-auto">
+            Join the exclusive whitelist for USDT and ePound token access
+          </p>
         </div>
 
         <SimpleSteps />
 
+        <WhitelistInfo />
 
       </div>
     </div>

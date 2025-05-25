@@ -125,6 +125,13 @@ export default function SimpleSteps() {
     }
   }, [approvalSuccess, currentCurrency.symbol]);
 
+  // Refetch whitelist status when currency changes
+  useEffect(() => {
+    if (address) {
+      refetchWhitelistStatus();
+    }
+  }, [selectedCurrency, address, refetchWhitelistStatus]);
+
   // Determine current step based on status
   const getStep = () => {
     if (!isConnected) return 1;
@@ -230,7 +237,7 @@ export default function SimpleSteps() {
         <CurrencySelector
           selectedCurrency={selectedCurrency}
           onCurrencyChange={setSelectedCurrency}
-          disabled={step > 2}
+          disabled={false}
         />
       )}
 

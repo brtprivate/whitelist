@@ -21,7 +21,7 @@ export default function CurrencySelector({
         </div>
         <div className="ml-3">
           <h3 className="font-bold text-slate-800 text-sm sm:text-base">Select Currency</h3>
-          <p className="text-slate-600 text-xs hidden sm:block">Choose your preferred currency</p>
+          <p className="text-slate-600 text-xs hidden sm:block">Choose USDT or ePound</p>
         </div>
       </div>
 
@@ -33,9 +33,9 @@ export default function CurrencySelector({
             disabled={disabled}
             className={`p-2 sm:p-3 rounded-lg border transition-all duration-200 ${
               selectedCurrency === key
-                ? 'bg-blue-50 border-blue-200 shadow-md'
-                : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
-            } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                ? 'bg-blue-50 border-blue-200 shadow-md ring-2 ring-blue-100'
+                : 'bg-slate-50 border-slate-200 hover:bg-blue-50 hover:border-blue-200'
+            } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-md'}`}
           >
             <div className="flex items-center justify-center mb-1 sm:mb-2">
               <span className="text-lg sm:text-xl">{currency.icon}</span>
