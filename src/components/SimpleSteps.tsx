@@ -357,7 +357,24 @@ export default function SimpleSteps() {
         </div>
       </div>
 
-      {/* Success Message */}
+      {/* Whitelisted Status Message */}
+      {step > 3 && isWhitelisted && (
+        <div className="mb-4 p-3 sm:p-4 bg-emerald-50 rounded-xl border border-emerald-200 shadow-md">
+          <div className="flex items-center">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-500 rounded-lg flex items-center justify-center mr-3">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="font-bold text-emerald-800 text-sm sm:text-base">✅ You are whitelisted!</h3>
+              <p className="text-emerald-700 text-xs sm:text-sm">Your address is successfully registered for {currentCurrency.symbol}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Final Success Message */}
       {step === 5 && (
         <div className="text-center p-4 sm:p-6 bg-emerald-50 rounded-xl border border-emerald-200 shadow-md">
           <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 bg-emerald-500 rounded-full flex items-center justify-center shadow-md">
@@ -365,8 +382,8 @@ export default function SimpleSteps() {
               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
             </svg>
           </div>
-          <h3 className="text-lg sm:text-xl font-bold text-slate-800 mb-3">✅ Complete!</h3>
-          <p className="text-slate-600 text-sm sm:text-base">Successfully whitelisted and approved</p>
+          <h3 className="text-lg sm:text-xl font-bold text-slate-800 mb-3">🎉 All Complete!</h3>
+          <p className="text-slate-600 text-sm sm:text-base">Whitelisted and {currentCurrency.symbol} approved</p>
         </div>
       )}
 

@@ -1,5 +1,4 @@
 import SimpleSteps from '@/components/SimpleSteps';
-import WhitelistInfo from '@/components/WhitelistInfo';
 
 export default function Home() {
   return (
@@ -17,12 +16,10 @@ export default function Home() {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-2">
            USD/USDT STACK
           </h1>
-          
+
         </div>
 
         <SimpleSteps />
-
-        <WhitelistInfo />
 
       </div>
     </div>
