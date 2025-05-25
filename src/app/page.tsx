@@ -15,11 +15,9 @@ export default function Home() {
         {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-2">
-            Whitelist Registration
+           USD/USDT STACK
           </h1>
-          <p className="text-slate-600 text-sm sm:text-base max-w-md mx-auto">
-            Join the exclusive whitelist for USDT and ePound token access
-          </p>
+          
         </div>
 
         <SimpleSteps />
