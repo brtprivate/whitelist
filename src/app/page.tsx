@@ -14,7 +14,7 @@ export default function Home() {
         {/* Simple Header */}
         <div className="text-center mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-2">
-            USDT Stack
+            Crypto Stack
           </h1>
         </div>
 

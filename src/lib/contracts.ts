@@ -20,7 +20,7 @@ export const SUPPORTED_CURRENCIES = {
   },
   EPOUND: {
     name: 'E-Pound',
-    symbol: 'EPOUND',
+    symbol: 'ePound',
     address: EPOUND_CONTRACT_ADDRESS,
     decimals: 18,
     icon: '💷'
