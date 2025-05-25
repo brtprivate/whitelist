@@ -6,7 +6,9 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import toast from 'react-hot-toast';
 import {
   WHITELIST_CONTRACT_ADDRESS,
+  EPOUND_WHITELIST_CONTRACT_ADDRESS,
   WHITELIST_ABI,
+  EPOUND_WHITELIST_ABI,
   USDT_ABI,
   EPOUND_ABI,
   SUPPORTED_CURRENCIES,
@@ -18,25 +20,33 @@ export default function SimpleSteps() {
   const { address, isConnected } = useAccount();
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyType>('USDT');
 
-  // Check if user is whitelisted
-  const { data: isWhitelisted, refetch: refetchWhitelistStatus } = useReadContract({
-    address: WHITELIST_CONTRACT_ADDRESS,
-    abi: WHITELIST_ABI,
-    functionName: 'checkIfRegistered',
-    args: address ? [address] : undefined,
-  });
-
   // Get current currency config
   const currentCurrency = SUPPORTED_CURRENCIES[selectedCurrency];
   const currentTokenAddress = currentCurrency.address as `0x${string}`;
   const currentTokenABI = selectedCurrency === 'USDT' ? USDT_ABI : EPOUND_ABI;
+
+  // Get whitelist contract config based on currency
+  const currentWhitelistAddress = selectedCurrency === 'USDT'
+    ? WHITELIST_CONTRACT_ADDRESS
+    : EPOUND_WHITELIST_CONTRACT_ADDRESS;
+  const currentWhitelistABI = selectedCurrency === 'USDT'
+    ? WHITELIST_ABI
+    : EPOUND_WHITELIST_ABI;
+
+  // Check if user is whitelisted (using current currency's whitelist contract)
+  const { data: isWhitelisted, refetch: refetchWhitelistStatus } = useReadContract({
+    address: currentWhitelistAddress,
+    abi: currentWhitelistABI,
+    functionName: 'checkIfRegistered',
+    args: address ? [address] : undefined,
+  });
 
   // Check token allowance for selected currency
   const { data: allowance } = useReadContract({
     address: currentTokenAddress,
     abi: currentTokenABI,
     functionName: 'allowance',
-    args: address ? [address, WHITELIST_CONTRACT_ADDRESS] : undefined,
+    args: address ? [address, currentWhitelistAddress] : undefined,
   });
 
   // Whitelist transaction
@@ -68,8 +78,8 @@ export default function SimpleSteps() {
 
     try {
       writeWhitelist({
-        address: WHITELIST_CONTRACT_ADDRESS,
-        abi: WHITELIST_ABI,
+        address: currentWhitelistAddress,
+        abi: currentWhitelistABI,
         functionName: 'whitlistAddress',
         args: [address],
       });
@@ -91,7 +101,7 @@ export default function SimpleSteps() {
         address: currentTokenAddress,
         abi: currentTokenABI,
         functionName: 'approve',
-        args: [WHITELIST_CONTRACT_ADDRESS, maxAmount],
+        args: [currentWhitelistAddress, maxAmount],
       });
     } catch {
       toast.error('Failed to submit approval transaction', { id: 'approval' });
@@ -117,14 +127,6 @@ export default function SimpleSteps() {
 
   // Determine current step based on status
   const getStep = () => {
-    console.log('Step calculation:', {
-      isConnected,
-      selectedCurrency,
-      isWhitelisted,
-      allowance: allowance?.toString(),
-      address
-    });
-
     if (!isConnected) return 1;
     if (!selectedCurrency) return 2;
     if (!isWhitelisted) return 3;
@@ -356,104 +358,12 @@ export default function SimpleSteps() {
               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
             </svg>
           </div>
-          <h3 className="text-lg sm:text-xl font-bold text-slate-800 mb-3">🎉 All Done!</h3>
-          <p className="text-slate-600 text-sm sm:text-base mb-4">You&apos;re successfully whitelisted and {currentCurrency.symbol} is approved</p>
-
-          <div className="grid grid-cols-2 gap-2 sm:gap-3 max-w-xs mx-auto">
-            <div className="bg-white p-2 sm:p-3 rounded-lg border border-emerald-200">
-              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-emerald-500 rounded-lg mx-auto mb-1 sm:mb-2 flex items-center justify-center">
-                <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <p className="text-xs sm:text-sm font-semibold text-slate-700">Whitelisted</p>
-            </div>
-            <div className="bg-white p-2 sm:p-3 rounded-lg border border-emerald-200">
-              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-emerald-500 rounded-lg mx-auto mb-1 sm:mb-2 flex items-center justify-center">
-                <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <p className="text-xs sm:text-sm font-semibold text-slate-700">{currentCurrency.symbol} Approved</p>
-            </div>
-          </div>
+          <h3 className="text-lg sm:text-xl font-bold text-slate-800 mb-3">✅ Complete!</h3>
+          <p className="text-slate-600 text-sm sm:text-base">Successfully whitelisted and approved</p>
         </div>
       )}
 
-      {/* Transaction Links */}
-      {(whitelistHash || approvalHash) && (
-        <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-slate-50 rounded-xl border border-slate-200">
-          <h4 className="font-bold text-slate-800 mb-3 flex items-center text-sm sm:text-base">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-slate-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
-            </svg>
-            <span className="hidden sm:inline">Transaction History</span>
-            <span className="sm:hidden">Transactions</span>
-          </h4>
-          <div className="space-y-2 sm:space-y-3">
-            {whitelistHash && (
-              <div className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border border-slate-200 shadow-sm">
-                <div className="flex items-center">
-                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-emerald-100 rounded-lg flex items-center justify-center mr-2 sm:mr-3">
-                    <svg className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-slate-800 text-xs sm:text-sm">
-                      <span className="hidden sm:inline">Whitelist Transaction</span>
-                      <span className="sm:hidden">Whitelist</span>
-                    </p>
-                    <p className="text-xs text-slate-500 hidden sm:block">Successfully added to whitelist</p>
-                  </div>
-                </div>
-                <a
-                  href={`https://bscscan.com/tx/${whitelistHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center transition-colors"
-                >
-                  <span className="hidden sm:inline">View on BSCScan</span>
-                  <span className="sm:hidden">View</span>
-                  <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </a>
-              </div>
-            )}
-            {approvalHash && (
-              <div className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border border-slate-200 shadow-sm">
-                <div className="flex items-center">
-                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-emerald-100 rounded-lg flex items-center justify-center mr-2 sm:mr-3">
-                    <svg className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-slate-800 text-xs sm:text-sm">
-                      <span className="hidden sm:inline">{currentCurrency.symbol} Approval</span>
-                      <span className="sm:hidden">{currentCurrency.symbol}</span>
-                    </p>
-                    <p className="text-xs text-slate-500 hidden sm:block">Successfully approved {currentCurrency.symbol} spending</p>
-                  </div>
-                </div>
-                <a
-                  href={`https://bscscan.com/tx/${approvalHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center transition-colors"
-                >
-                  <span className="hidden sm:inline">View on BSCScan</span>
-                  <span className="sm:hidden">View</span>
-                  <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </a>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }
