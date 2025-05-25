@@ -19,7 +19,7 @@ export default function SimpleSteps() {
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyType>('USDT');
 
   // Check if user is whitelisted
-  const { data: isWhitelisted } = useReadContract({
+  const { data: isWhitelisted, refetch: refetchWhitelistStatus } = useReadContract({
     address: WHITELIST_CONTRACT_ADDRESS,
     abi: WHITELIST_ABI,
     functionName: 'checkIfRegistered',
@@ -102,8 +102,12 @@ export default function SimpleSteps() {
   useEffect(() => {
     if (whitelistSuccess) {
       toast.success('Successfully added to whitelist!', { id: 'whitelist' });
+      // Refetch whitelist status after successful transaction
+      setTimeout(() => {
+        refetchWhitelistStatus();
+      }, 2000); // Wait 2 seconds for blockchain to update
     }
-  }, [whitelistSuccess]);
+  }, [whitelistSuccess, refetchWhitelistStatus]);
 
   useEffect(() => {
     if (approvalSuccess) {
@@ -113,6 +117,14 @@ export default function SimpleSteps() {
 
   // Determine current step based on status
   const getStep = () => {
+    console.log('Step calculation:', {
+      isConnected,
+      selectedCurrency,
+      isWhitelisted,
+      allowance: allowance?.toString(),
+      address
+    });
+
     if (!isConnected) return 1;
     if (!selectedCurrency) return 2;
     if (!isWhitelisted) return 3;
