@@ -208,13 +208,13 @@ export default function SimpleSteps() {
     }
   }, [selectedCurrency, address, refetchWhitelistStatus, refetchAllowance]);
 
-  // Determine current step based on status (combined approval + whitelist)
+  // Determine current step based on status (currency first, then wallet, then whitelist)
   const getStep = useCallback(() => {
-    if (!connected) return 1;
-    if (!hasCurrency) return 2;
+    if (!hasCurrency) return 1; // Currency selection first
+    if (!connected) return 2; // Wallet connection second
     if (!Boolean(isWhitelisted)) return 3; // Combined approval + whitelist step
     return 4; // All done
-  }, [connected, hasCurrency, isWhitelisted]);
+  }, [hasCurrency, connected, isWhitelisted]);
 
   // Debug logging for status changes
   useEffect(() => {
@@ -224,7 +224,9 @@ export default function SimpleSteps() {
       selectedCurrency,
       isWhitelisted: Boolean(isWhitelisted),
       allowance: allowance?.toString(),
-      step: currentStep
+      step: currentStep,
+      hasCurrency,
+      connected
     });
   }, [address, selectedCurrency, isWhitelisted, allowance, connected, hasCurrency, getStep]);
 
@@ -234,7 +236,6 @@ export default function SimpleSteps() {
 
   // Memoized currency selector to avoid TypeScript issues
   const currencySelector = useMemo(() => {
-    if (!isConnected) return null;
     return (
       <div className="mb-6">
         <CurrencySelector
@@ -244,12 +245,12 @@ export default function SimpleSteps() {
         />
       </div>
     );
-  }, [isConnected, selectedCurrency, setSelectedCurrency]);
+  }, [selectedCurrency, setSelectedCurrency]);
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border border-slate-100">
       {/* Progress Bar */}
-      {connected && (
+      {hasCurrency && (
         <div className="mb-6 px-1">
           <div className="w-full bg-slate-100 rounded-full h-3 shadow-inner border border-slate-200 relative overflow-hidden">
             <div
@@ -288,16 +289,19 @@ export default function SimpleSteps() {
         </div>
       )}
 
-      {/* Only show get started when wallet is not connected */}
-      {!connected && (
+      {/* Only show get started when currency is not selected */}
+      {!hasCurrency && (
         <div className="mb-6">
           <h2 className="text-lg font-bold text-slate-800 mb-2">Get Started</h2>
-          <p className="text-slate-600 text-sm">Connect your wallet to begin the whitelist process</p>
+          <p className="text-slate-600 text-sm">Select your preferred currency to begin the whitelist process</p>
         </div>
       )}
 
-      {/* Step 1: Connect Wallet - Only show when not connected */}
-      {!connected && (
+      {/* Step 1: Currency Selector - Always show first */}
+      {currencySelector}
+
+      {/* Step 2: Connect Wallet - Only show when currency selected but not connected */}
+      {hasCurrency && !connected && (
         <div className="mb-4 p-4 rounded-xl border-2 border-blue-100 bg-blue-50/50 hover:bg-blue-50 transition-all duration-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -308,7 +312,7 @@ export default function SimpleSteps() {
               </div>
               <div className="ml-4">
                 <h3 className="font-semibold text-slate-800 text-base">Connect Wallet</h3>
-                <p className="text-slate-600 text-sm">Connect to get started</p>
+                <p className="text-slate-600 text-sm">Connect to continue with {selectedCurrency === 'USDT' ? 'USDT' : 'ePound'}</p>
               </div>
             </div>
             <ConnectButton.Custom>
@@ -324,9 +328,6 @@ export default function SimpleSteps() {
           </div>
         </div>
       )}
-
-      {/* Currency Selector - Only show when connected */}
-      {currencySelector}
 
 
 
@@ -418,7 +419,7 @@ export default function SimpleSteps() {
                   <span>Processing...</span>
                 </div>
               ) : (
-                ' Connect'
+                'Join Whitelist'
               )}
             </button>
           </div>
