@@ -14,8 +14,25 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Whitelist & USDT Approval",
-  description: "Manage whitelist and USDT approvals for BSC contracts",
+  title: "Whitelist & Token Approval",
+  description: "Manage whitelist and token approvals for BSC contracts - USDT & ePound",
+  icons: {
+    icon: [
+      {
+        url: '/favicon.svg',
+        type: 'image/svg+xml',
+      },
+      {
+        url: '/favicon.ico',
+        sizes: '32x32',
+        type: 'image/x-icon',
+      }
+    ],
+    apple: {
+      url: '/favicon.svg',
+      type: 'image/svg+xml',
+    },
+  },
 };
 
 export default function RootLayout({

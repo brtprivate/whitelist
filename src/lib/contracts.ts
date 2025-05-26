@@ -16,14 +16,14 @@ export const SUPPORTED_CURRENCIES = {
     symbol: 'USDT',
     address: USDT_CONTRACT_ADDRESS,
     decimals: 18,
-    icon: '💵'
+    icon: '/usdt-logo.svg'
   },
   EPOUND: {
     name: 'E-Pound',
     symbol: 'ePound',
     address: EPOUND_CONTRACT_ADDRESS,
     decimals: 18,
-    icon: '💷'
+    icon: '/epound-logo.svg'
   }
 } as const;
 
