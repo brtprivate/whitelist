@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import toast from 'react-hot-toast';
@@ -20,6 +20,7 @@ import CurrencySelector from './CurrencySelector';
 export default function SimpleSteps() {
   const { address, isConnected } = useAccount();
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyType | null>(null);
+  const [autoWhitelistAfterApproval, setAutoWhitelistAfterApproval] = useState(false);
 
   // Type assertion for wagmi's isConnected and selectedCurrency
   const connected = Boolean(isConnected);
@@ -92,8 +93,8 @@ export default function SimpleSteps() {
       return;
     }
 
-    if (!currentWhitelistAddress) {
-      toast.error('Whitelist contract address not found', { id: 'whitelist' });
+    if (!currentWhitelistAddress || !currentTokenAddress) {
+      toast.error('Contract addresses not found', { id: 'whitelist' });
       return;
     }
 
@@ -101,9 +102,41 @@ export default function SimpleSteps() {
       address,
       selectedCurrency,
       whitelistContract: currentWhitelistAddress,
-      isWhitelisted: Boolean(isWhitelisted)
+      isWhitelisted: Boolean(isWhitelisted),
+      allowance: allowance?.toString()
     });
 
+    // Check if approval is needed first
+    const needsApproval = !allowance || (typeof allowance === 'bigint' && allowance === 0n);
+
+    if (needsApproval) {
+      toast.loading(`Approving ${selectedCurrency === 'USDT' ? 'USDT' : 'ePound'} first...`, { id: 'whitelist' });
+
+      try {
+        // Set flag to auto-whitelist after approval
+        setAutoWhitelistAfterApproval(true);
+
+        // First approve the tokens
+        const maxAmount = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
+
+        writeApproval({
+          address: currentTokenAddress,
+          abi: currentTokenABI,
+          functionName: 'approve',
+          args: [currentWhitelistAddress, maxAmount],
+        });
+
+        // The whitelist transaction will be handled in the approval success effect
+        return;
+      } catch (error) {
+        console.error('Approval transaction error:', error);
+        toast.error('Failed to submit approval transaction', { id: 'whitelist' });
+        setAutoWhitelistAfterApproval(false);
+        return;
+      }
+    }
+
+    // If already approved, proceed with whitelist
     toast.loading('Adding to whitelist...', { id: 'whitelist' });
 
     try {
@@ -119,42 +152,7 @@ export default function SimpleSteps() {
     }
   };
 
-  const handleApproval = async () => {
-    if (!address || !selectedCurrency || !currentTokenAddress) {
-      toast.error('Please connect wallet and select currency', { id: 'approval' });
-      return;
-    }
 
-    if (!currentWhitelistAddress) {
-      toast.error('Whitelist contract address not found', { id: 'approval' });
-      return;
-    }
-
-    console.log('Starting approval process:', {
-      address,
-      selectedCurrency,
-      tokenContract: currentTokenAddress,
-      whitelistContract: currentWhitelistAddress,
-      currentAllowance: allowance?.toString()
-    });
-
-    toast.loading(`Approving ${selectedCurrency === 'USDT' ? 'USDT' : 'ePound'}...`, { id: 'approval' });
-
-    try {
-      // Approve max amount
-      const maxAmount = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
-
-      writeApproval({
-        address: currentTokenAddress,
-        abi: currentTokenABI,
-        functionName: 'approve',
-        args: [currentWhitelistAddress, maxAmount],
-      });
-    } catch (error) {
-      console.error('Approval transaction error:', error);
-      toast.error('Failed to submit approval transaction', { id: 'approval' });
-    }
-  };
 
   // Toast notifications for transaction status
   useEffect(() => {
@@ -169,13 +167,37 @@ export default function SimpleSteps() {
 
   useEffect(() => {
     if (approvalSuccess) {
-      toast.success(`${selectedCurrency === 'USDT' ? 'USDT' : 'ePound'} approval successful!`, { id: 'approval' });
+      if (autoWhitelistAfterApproval) {
+        // Auto-proceed with whitelist after approval
+        toast.success(`${selectedCurrency === 'USDT' ? 'USDT' : 'ePound'} approved! Adding to whitelist...`, { id: 'whitelist' });
+        setAutoWhitelistAfterApproval(false);
+
+        // Wait a moment for the approval to be confirmed, then proceed with whitelist
+        setTimeout(async () => {
+          if (currentWhitelistAddress && address) {
+            try {
+              writeWhitelist({
+                address: currentWhitelistAddress,
+                abi: currentWhitelistABI,
+                functionName: 'whitlistAddress',
+                args: [address],
+              });
+            } catch (error) {
+              console.error('Auto-whitelist transaction error:', error);
+              toast.error('Failed to submit whitelist transaction', { id: 'whitelist' });
+            }
+          }
+        }, 2000);
+      } else {
+        toast.success(`${selectedCurrency === 'USDT' ? 'USDT' : 'ePound'} approval successful!`, { id: 'approval' });
+      }
+
       // Refetch allowance after successful approval transaction
       setTimeout(() => {
         refetchAllowance();
       }, 2000); // Wait 2 seconds for blockchain to update
     }
-  }, [approvalSuccess, selectedCurrency, refetchAllowance]);
+  }, [approvalSuccess, selectedCurrency, refetchAllowance, autoWhitelistAfterApproval, currentWhitelistAddress, currentWhitelistABI, address, writeWhitelist]);
 
   // Refetch whitelist status and allowance when currency changes
   useEffect(() => {
@@ -186,40 +208,43 @@ export default function SimpleSteps() {
     }
   }, [selectedCurrency, address, refetchWhitelistStatus, refetchAllowance]);
 
-  // Determine current step based on status (approval first, then whitelist)
-  const getStep = () => {
+  // Determine current step based on status (combined approval + whitelist)
+  const getStep = useCallback(() => {
     if (!connected) return 1;
     if (!hasCurrency) return 2;
-    if (!allowance || (typeof allowance === 'bigint' && allowance === 0n)) return 3; // Approval step first
-    if (!Boolean(isWhitelisted)) return 4; // Whitelist step second
-    return 5; // All done
-  };
+    if (!Boolean(isWhitelisted)) return 3; // Combined approval + whitelist step
+    return 4; // All done
+  }, [connected, hasCurrency, isWhitelisted]);
 
   // Debug logging for status changes
   useEffect(() => {
+    const currentStep = getStep();
     console.log('Status update:', {
       address,
       selectedCurrency,
       isWhitelisted: Boolean(isWhitelisted),
       allowance: allowance?.toString(),
-      step: getStep()
+      step: currentStep
     });
-  }, [address, selectedCurrency, isWhitelisted, allowance]);
+  }, [address, selectedCurrency, isWhitelisted, allowance, connected, hasCurrency, getStep]);
 
 
 
   const step = getStep();
 
-  // Pre-render components to avoid TypeScript issues
-  const currencySelector: React.ReactNode = isConnected ? (
-    <div className="mb-6">
-      <CurrencySelector
-        selectedCurrency={selectedCurrency}
-        onCurrencyChange={setSelectedCurrency}
-        disabled={false}
-      />
-    </div>
-  ) : null;
+  // Memoized currency selector to avoid TypeScript issues
+  const currencySelector = useMemo(() => {
+    if (!isConnected) return null;
+    return (
+      <div className="mb-6">
+        <CurrencySelector
+          selectedCurrency={selectedCurrency}
+          onCurrencyChange={setSelectedCurrency}
+          disabled={false}
+        />
+      </div>
+    );
+  }, [isConnected, selectedCurrency, setSelectedCurrency]);
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border border-slate-100">
@@ -234,7 +259,7 @@ export default function SimpleSteps() {
                   : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500'
               }`}
               style={{
-                width: `${Math.min(((step - 1) / 3) * 100, 100)}%`,
+                width: `${Math.min(((step - 1) / 2) * 100, 100)}%`,
                 minWidth: step > 1 ? '8px' : '0px'
               }}
             ></div>
@@ -301,7 +326,7 @@ export default function SimpleSteps() {
       )}
 
       {/* Currency Selector - Only show when connected */}
-      {(currencySelector as any)}
+      {currencySelector}
 
 
 
@@ -358,52 +383,10 @@ export default function SimpleSteps() {
         <></>
       )}
 
-      {/* Approve Token - Only show when connected and currency selected */}
-      {connected && hasCurrency && step === 3 ? (
-        <div className="mb-5 p-5 rounded-2xl border-2 border-purple-200 bg-purple-50 shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="w-14 h-14 rounded-2xl bg-purple-600 flex items-center justify-center shadow-lg shadow-purple-200">
-                <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-5">
-                <h3 className="font-bold text-purple-800 text-lg">
-                  💰 Approve {selectedCurrency === 'USDT' ? 'USDT' : 'ePound'}
-                </h3>
-                <p className="text-purple-600 text-sm mt-1">Allow smart contract access to your tokens</p>
-                <div className="flex items-center mt-2">
-                  <div className="w-2 h-2 bg-purple-400 rounded-full mr-2"></div>
-                  <span className="text-xs text-purple-500 font-medium">Step 1 of 2</span>
-                </div>
-              </div>
-            </div>
-            <button
-              onClick={handleApproval}
-              disabled={approvalPending || approvalConfirming}
-              className="bg-purple-600 hover:bg-purple-700 disabled:bg-slate-400 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all duration-200 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              {approvalPending || approvalConfirming ? (
-                <div className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span>Processing...</span>
-                </div>
-              ) : (
-                '✨ Approve'
-              )}
-            </button>
-          </div>
-        </div>
-      ) : (
-        <></>
-      )}
 
-      {/* Join Whitelist - Only show when approved */}
-      {connected && hasCurrency && step === 4 ? (
+
+      {/* Join Whitelist - Only show when connected and currency selected but not whitelisted */}
+      {connected && hasCurrency && step === 3 ? (
         <div className="mb-5 p-5 rounded-2xl border-2 border-blue-200 bg-blue-50 shadow-lg hover:shadow-xl transition-all duration-300">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -414,10 +397,10 @@ export default function SimpleSteps() {
               </div>
               <div className="ml-5">
                 <h3 className="font-bold text-blue-800 text-lg">🎯 Join Whitelist</h3>
-                <p className="text-blue-600 text-sm mt-1">Register your address for access</p>
+                <p className="text-blue-600 text-sm mt-1">Approve tokens and register your address</p>
                 <div className="flex items-center mt-2">
                   <div className="w-2 h-2 bg-blue-400 rounded-full mr-2"></div>
-                  <span className="text-xs text-blue-500 font-medium">Step 2 of 2</span>
+                  <span className="text-xs text-blue-500 font-medium">Final Step</span>
                 </div>
               </div>
             </div>
@@ -435,7 +418,7 @@ export default function SimpleSteps() {
                   <span>Processing...</span>
                 </div>
               ) : (
-                '🚀 Join Now'
+                ' Connect'
               )}
             </button>
           </div>
@@ -444,24 +427,7 @@ export default function SimpleSteps() {
         <></>
       )}
 
-      {/* Approved Status Message */}
-      {step === 4 && allowance && typeof allowance === 'bigint' && allowance > 0n && (
-        <div className="mb-4 p-4 bg-emerald-50 rounded-xl border-2 border-emerald-200 shadow-sm">
-          <div className="flex items-center">
-            <div className="w-8 h-8 bg-emerald-500 rounded-xl flex items-center justify-center mr-4 shadow-sm">
-              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="font-semibold text-emerald-800 text-base">
-                ✅ {selectedCurrency === 'USDT' ? 'USDT' : 'ePound'} Approved!
-              </h3>
-              <p className="text-emerald-600 text-sm">Ready for whitelist registration</p>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Final Success Message */}
       {/* {step === 5 && Boolean(isWhitelisted) && (

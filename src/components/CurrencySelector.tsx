@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { SUPPORTED_CURRENCIES, CurrencyType } from '@/lib/contracts';
 
 interface CurrencySelectorProps {
