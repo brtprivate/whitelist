@@ -11,7 +11,7 @@ All deployment files are located in the `out/` directory:
 ```
 out/
 ├── index.html              # Main application page
-├── 404.html               # 404 error page  
+├── 404.html               # 404 error page
 ├── _next/                 # Next.js static assets
 │   ├── static/
 │   │   ├── chunks/        # JavaScript bundles
@@ -113,7 +113,7 @@ The app is pre-configured with:
 - ✅ **Dual Currency Support**: USDT and ePound tokens
 - ✅ **Mobile Responsive**: Works on all devices
 - ✅ **Toast Notifications**: User-friendly feedback messages
-- ✅ **Wallet Integration**: MetaMask, WalletConnect, and other Web3 wallets
+- ✅ **Wallet Integration**: Trust Wallet (prioritized), MetaMask, WalletConnect, and other Web3 wallets
 
 ## 🚀 Quick Deployment Checklist
 

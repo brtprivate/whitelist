@@ -1,0 +1,31 @@
+
+# cPanel Deployment Instructions
+
+## Files to Upload
+Upload all files from the 'cpanel-deploy' directory to your cPanel public_html directory.
+
+## Steps:
+1. Access your cPanel File Manager
+2. Navigate to public_html directory
+3. Upload all files from the 'cpanel-deploy' folder
+4. Extract if uploaded as a zip file
+5. Ensure all files are in the root of public_html (not in a subdirectory)
+
+## Important Files:
+- index.html (main entry point)
+- _next/ (Next.js static assets)
+- All other HTML files for routing
+
+## Notes:
+- This is a static export, no server-side functionality required
+- All Web3 functionality runs client-side
+- Make sure your domain supports HTTPS for Web3 wallet connections
+
+## File Structure in public_html:
+public_html/
+├── index.html
+├── _next/
+│   ├── static/
+│   └── ...
+├── favicon.ico
+└── other static files...

@@ -1,0 +1,69 @@
+<svg width="200" height="120" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Wallet Body -->
+  <g transform="translate(100, 60)">
+    <!-- Main wallet shape -->
+    <path d="M -80 -40
+             L 80 -40
+             Q 90 -40, 90 -30
+             L 90 30
+             Q 90 40, 80 40
+             L -80 40
+             Q -90 40, -90 30
+             L -90 -30
+             Q -90 -40, -80 -40 Z"
+          fill="#d97706"
+          stroke="#92400e"
+          stroke-width="2"/>
+
+    <!-- Wallet stitching -->
+    <path d="M -85 -35 L 85 -35" stroke="#92400e" stroke-width="1" stroke-dasharray="3,2"/>
+    <path d="M -85 35 L 85 35" stroke="#92400e" stroke-width="1" stroke-dasharray="3,2"/>
+
+    <!-- Wallet fold -->
+    <path d="M -80 -40
+             L -60 -60
+             L 60 -60
+             L 80 -40"
+          fill="#ea580c"
+          stroke="#92400e"
+          stroke-width="2"/>
+
+    <!-- Dollar bills sticking out -->
+    <!-- Green dollar bill -->
+    <rect x="-10" y="-70" width="30" height="20" fill="#10b981" stroke="#059669" stroke-width="1" rx="2"/>
+    <circle cx="5" cy="-60" r="6" fill="#059669" opacity="0.8"/>
+    <text x="5" y="-57" text-anchor="middle" font-family="Arial" font-size="8" font-weight="bold" fill="#ffffff">$</text>
+
+    <!-- Second bill -->
+    <rect x="-25" y="-65" width="30" height="20" fill="#16a34a" stroke="#15803d" stroke-width="1" rx="2"/>
+    <circle cx="-10" cy="-55" r="6" fill="#15803d" opacity="0.8"/>
+    <text x="-10" y="-52" text-anchor="middle" font-family="Arial" font-size="8" font-weight="bold" fill="#ffffff">$</text>
+
+    <!-- Coins -->
+    <!-- Gold coin -->
+    <circle cx="45" cy="-50" r="12" fill="#fbbf24" stroke="#d97706" stroke-width="2"/>
+    <circle cx="45" cy="-50" r="8" fill="#f59e0b" stroke="#d97706" stroke-width="1"/>
+    <text x="45" y="-46" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#92400e">$</text>
+
+    <!-- Silver coin -->
+    <circle cx="25" cy="-55" r="10" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+    <circle cx="25" cy="-55" r="6" fill="#d1d5db" stroke="#9ca3af" stroke-width="1"/>
+    <text x="25" y="-52" text-anchor="middle" font-family="Arial" font-size="8" font-weight="bold" fill="#6b7280">¢</text>
+
+    <!-- Wallet clasp/button -->
+    <circle cx="70" cy="0" r="4" fill="#92400e" stroke="#451a03" stroke-width="1"/>
+
+    <!-- Wallet card slot -->
+    <rect x="-70" y="-20" width="40" height="25" fill="#7c2d12" stroke="#451a03" stroke-width="1" rx="2"/>
+    <rect x="-65" y="-15" width="30" height="3" fill="#dc2626" rx="1"/>
+    <rect x="-65" y="-10" width="25" height="2" fill="#1f2937" rx="1"/>
+
+    <!-- Wallet texture lines -->
+    <path d="M -75 -25 L 75 -25" stroke="#92400e" stroke-width="0.5" opacity="0.5"/>
+    <path d="M -75 -10 L 75 -10" stroke="#92400e" stroke-width="0.5" opacity="0.5"/>
+    <path d="M -75 5 L 75 5" stroke="#92400e" stroke-width="0.5" opacity="0.5"/>
+    <path d="M -75 20 L 75 20" stroke="#92400e" stroke-width="0.5" opacity="0.5"/>
+  </g>
+
+
+</svg>

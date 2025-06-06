@@ -12,7 +12,7 @@ A modern, mobile-friendly Web3 whitelist application built with Next.js, support
 - 🎯 **Simple 4-Step Process**: Connect wallet → Select currency → Join whitelist → Approve tokens
 - 📱 **Mobile-First Design**: Fully responsive and optimized for all screen sizes
 - 💰 **Multi-Currency Support**: USDT and E-Pound token integration
-- 🔗 **Web3 Integration**: Built with Wagmi and RainbowKit
+- 🔗 **Web3 Integration**: Built with ThirdWeb SDK
 - ⚡ **Fast & Lightweight**: Optimized bundle size and performance
 - 🎨 **Clean UI**: Modern design without gradients, focused on simplicity
 - 🔐 **Secure**: Smart contract interactions with proper error handling
@@ -22,7 +22,7 @@ A modern, mobile-friendly Web3 whitelist application built with Next.js, support
 - **Framework**: Next.js 15.3.2 with App Router
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
-- **Web3**: Wagmi + RainbowKit + Viem
+- **Web3**: ThirdWeb SDK
 - **Blockchain**: Binance Smart Chain (BSC)
 - **Deployment**: Netlify-ready
 
@@ -54,8 +54,7 @@ A modern, mobile-friendly Web3 whitelist application built with Next.js, support
 
    Add your environment variables:
    ```env
-   NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id
-   NEXT_PUBLIC_ALCHEMY_API_KEY=your_alchemy_key
+   NEXT_PUBLIC_THIRDWEB_CLIENT_ID=your_thirdweb_client_id
    ```
 
 4. **Update contract addresses**

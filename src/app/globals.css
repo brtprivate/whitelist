@@ -38,3 +38,8 @@ body {
 .animate-shimmer {
   animation: shimmer 2s infinite;
 }
+
+.logo-img {
+  max-width: 100%;
+  height: auto;
+}

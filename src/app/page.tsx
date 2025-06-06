@@ -13,17 +13,16 @@ export default function Home() {
       <div className="max-w-md sm:max-w-lg mx-auto px-4 sm:px-6 relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-indigo-600 rounded-3xl shadow-xl shadow-indigo-200/50 mb-6">
-            <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-            </svg>
+          <div className="inline-flex items-center justify-center mb-4">
+            <img
+              src="/usd.png"
+              alt="USD Stack Wallet Logo"
+              className="w-80 sm:w-60 h-auto object-contain logo-img"
+            />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-slate-800 mb-4">
-            USD/USDT STACK
-          </h1>
         
-         
-        </div>
+          
+              </div>
 
         <SimpleSteps />
 

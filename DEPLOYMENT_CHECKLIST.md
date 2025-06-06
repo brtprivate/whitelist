@@ -2,13 +2,13 @@
 
 ## ✅ Pre-Deployment Requirements
 
-### 1. WalletConnect Configuration
-- [ ] Get WalletConnect Project ID from [cloud.walletconnect.com](https://cloud.walletconnect.com/)
-- [ ] Update `.env.local` with your Project ID:
+### 1. ThirdWeb Configuration
+- [ ] Get ThirdWeb Client ID from [thirdweb.com](https://thirdweb.com/dashboard)
+- [ ] Update `.env.local` with your Client ID:
   ```
-  NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=your-project-id-here
+  NEXT_PUBLIC_THIRDWEB_CLIENT_ID=your-client-id-here
   ```
-- [ ] Rebuild if you changed the Project ID: `npm run build`
+- [ ] Rebuild if you changed the Client ID: `npm run build`
 
 ### 2. Smart Contract Verification
 - [ ] USDT Whitelist Contract: `0xe2ba9bcac21eb68f86938d166802283ac57c7530`

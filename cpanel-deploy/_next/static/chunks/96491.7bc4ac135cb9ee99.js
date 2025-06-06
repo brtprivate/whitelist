@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[96491],{18872:(c,e,a)=>{a.d(e,{decimals:()=>s});var n=a(72980),r=a(23281);async function s(c){return(0,n.n)(()=>(0,r.rr)(c),{cacheKey:`${c.contract.chain.id}:${c.contract.address}:decimals`,cacheTime:Number.POSITIVE_INFINITY})}}}]);
